@@ -1,9 +1,82 @@
 const asyncHandler = require("express-async-handler");
 const bookModel = require("../models/bookModel");
-
+const { Order } = require("../models/orderModel");
 // @desc    Fetch all books with category population
 // @route   GET /api/books
 // @access  Public
+const getRecommendedBooks = asyncHandler(async (req, res) => {
+  let listBooks = [];
+  listBooks = await Order.aggregate([
+    {
+      $match: {
+        $and: [
+          {
+            isPaid: true,
+          },
+          {
+            createdAt: {
+              $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$orderItems"
+      }
+    },
+    {
+      $lookup: {
+        from: "books",
+        localField: "orderItems.book",
+        foreignField: "_id",
+        as: "bookDetails"
+      }
+    },
+    //bookDetails: [{id: 1, title: "ad"}] => bookDetails: {id: 1, title: "ad"}
+    {
+      $unwind: {
+        path: "$bookDetails"
+      }
+    },
+    {
+      $group: {
+        _id: "$bookDetails._id",
+        name: { $first: "$bookDetails.name" },
+        price: { $first: "$bookDetails.price" },
+        totalSold: { $sum: "$orderItems.qty" },
+        image: { $first: "$bookDetails.image" },
+        rating: { $first: "$bookDetails.rating" },
+        numReviews: {
+          $first: "$bookDetails.numReviews"
+        }
+      }
+    },
+    {
+      $sort: {
+        totalSold: 1
+      }
+    },
+    {
+      $limit: 10
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        price: 1,
+        image: 1,
+        rating: 1,
+        numReviews: 1
+      }
+    }
+  ]);
+  if (!listBooks || listBooks.length < 10) {
+    listBooks = await bookModel.find({}).select("_id name price image rating numReviews").sort({createdAt: 1}).limit(10);
+  }
+  res.json(listBooks);
+});
 const getBooks = asyncHandler(async (req, res) => {
   const pageSize = 10;
   const page = Number(req.query.pageNumber) || 1;
@@ -17,12 +90,13 @@ const getBooks = asyncHandler(async (req, res) => {
     : {};
 
   const count = await bookModel.countDocuments({ ...keyword });
-  const books = await bookModel.find({ ...keyword })
+  const books = await bookModel
+    .find({ ...keyword })
     .populate("category", "name description") // Populate category details
     .limit(pageSize)
     .skip(pageSize * (page - 1));
   console.log(books);
-  
+
   res.json({ books, page, pages: Math.ceil(count / pageSize) });
 });
 
@@ -30,7 +104,9 @@ const getBooks = asyncHandler(async (req, res) => {
 // @route   GET /api/books/:id
 // @access  Public
 const getBookById = asyncHandler(async (req, res) => {
-  const book = await bookModel.findById(req.params.id).populate("category", "name description");
+  const book = await bookModel
+    .findById(req.params.id)
+    .populate("category", "name description");
 
   if (book) {
     res.json(book);
@@ -64,7 +140,16 @@ const deleteBook = asyncHandler(async (req, res) => {
 // @route   POST /api/books
 // @access  Private/Admin
 const createBook = asyncHandler(async (req, res) => {
-  const { name, price, author, genre, description, category, image, countInStock } = req.body;
+  const {
+    name,
+    price,
+    author,
+    genre,
+    description,
+    category,
+    image,
+    countInStock,
+  } = req.body;
 
   // Kiểm tra xem category có tồn tại không
   if (!category) {
@@ -72,9 +157,9 @@ const createBook = asyncHandler(async (req, res) => {
     throw new Error("Category is required");
   }
 
-  let imagePath = "/images/sample.jpg"; 
+  let imagePath = "/images/sample.jpg";
   if (image) {
-    imagePath = image; 
+    imagePath = image;
   }
 
   const stock = countInStock || 0;
@@ -84,13 +169,13 @@ const createBook = asyncHandler(async (req, res) => {
     name: name || "No name",
     price: price || 0,
     user: req.user._id,
-    image: imagePath, 
+    image: imagePath,
     author: author || "No author",
     genre: genre || "Unknown",
-    countInStock: stock ,  
+    countInStock: stock,
     numReviews: 0,
     description: description || "No description",
-    category, 
+    category,
   });
 
   // Lưu sách vào cơ sở dữ liệu
@@ -98,12 +183,20 @@ const createBook = asyncHandler(async (req, res) => {
   res.status(201).json(createdBook);
 });
 
-
 // @desc    Update a Book
 // @route   PUT /api/books/:id
 // @access  Private/Admin
 const updateBook = asyncHandler(async (req, res) => {
-  const { name, price, description, image, author, genre, countInStock, category } = req.body;
+  const {
+    name,
+    price,
+    description,
+    image,
+    author,
+    genre,
+    countInStock,
+    category,
+  } = req.body;
 
   const book = await Book.findById(req.params.id);
 
@@ -115,7 +208,7 @@ const updateBook = asyncHandler(async (req, res) => {
     book.author = author || book.author;
     book.genre = genre || book.genre;
     book.countInStock = countInStock || book.countInStock;
-    book.category = category || book.category;  // Cập nhật category nếu có thay đổi
+    book.category = category || book.category; // Cập nhật category nếu có thay đổi
 
     const updatedBook = await book.save();
     res.json(updatedBook);
@@ -124,7 +217,6 @@ const updateBook = asyncHandler(async (req, res) => {
     throw new Error("Book not found");
   }
 });
-
 
 // @desc    Create new review
 // @route   POST /api/books/:id/reviews
@@ -157,7 +249,8 @@ const createBookReview = asyncHandler(async (req, res) => {
 
     // Calculate average rating
     book.rating =
-      book.reviews.reduce((acc, item) => item.rating + acc, 0) / book.reviews.length;
+      book.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      book.reviews.length;
 
     await book.save();
 
@@ -179,7 +272,7 @@ const getTopBooks = asyncHandler(async (req, res) => {
 
 const getBooksByCategory = async (categoryId) => {
   try {
-    const books = await Book.find({ category: categoryId });  // Tìm các sách có category trùng với categoryId
+    const books = await Book.find({ category: categoryId }); // Tìm các sách có category trùng với categoryId
     return books;
   } catch (error) {
     console.error("Error fetching books by category:", error);
@@ -195,5 +288,6 @@ module.exports = {
   updateBook,
   createBookReview,
   getTopBooks,
-  getBooksByCategory
+  getBooksByCategory,
+  getRecommendedBooks
 };

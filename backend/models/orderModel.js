@@ -51,6 +51,12 @@ const orderSchema = mongoose.Schema(
       required: true,
       default: 0.0,
     },
+    status: {
+      type: String,
+      required: true,
+      default: "AWAITING_PAYMENT",
+      enum: ["AWAITING_PAYMENT", "PAID_ERROR", "PAID","SHIPPING", "DELIVERED"],
+    },
     isPaid: {
       type: Boolean,
       required: true,

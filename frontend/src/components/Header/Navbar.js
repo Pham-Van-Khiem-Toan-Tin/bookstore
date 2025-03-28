@@ -1,33 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../actions/userActions";
 import SearchBar from "../SearchBar/SearchBar";
-import axios from "axios"; 
+import axios from "axios";
 import "./Navbar.css";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
-
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get("/api/categories");
-        setCategories(response.data); 
+        setCategories(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
       }
     };
 
     fetchCategories();
-  }, []); 
+  }, []);
 
   const logoutHandler = () => {
+    localStorage.clear();
     dispatch(logout());
+    navigate("/");
   };
 
   return (
@@ -122,6 +124,12 @@ const Navbar = () => {
             </button>
             <ul className="dropdown-menu bg-nav-color">
               <li className="bg-nav-color">
+                <Link
+                  to="/admin/sale"
+                  className="dropdown-item bg-nav-color"
+                >
+                  Statistical
+                </Link>
                 <Link
                   to="/admin/userlist"
                   className="dropdown-item bg-nav-color"

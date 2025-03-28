@@ -7,69 +7,90 @@ import {
 } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message/Message";
-import { addToCart, removeFromCart } from "../../actions/cartActions";
+import { addToCart, getCart } from "../../actions/cartActions";
 import "./Cart.css";
+import { toast } from "react-toastify";
 
 const Cart = () => {
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const qty = Number(searchParams.get("qty"));
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
-  const { cartItems } = cart;
-
+  const { cartItems, success, error } = cart;
+  console.log(cart);
+  
   useEffect(() => {
-    if (id) {
-      dispatch(addToCart(id, qty));
-    }
-  }, [dispatch, id, qty]);
+    dispatch(getCart());
+  }, [dispatch]);
+  useEffect(() => {    
+    if (success) {     
 
+      toast.success("Change quantity successfully!");
+      dispatch(getCart());
+      dispatch({ type: "CART_RESET" });
+    }
+    if (error) {
+      alert(error);
+      dispatch({ type: "CART_RESET_ERROR" });
+    }
+  }, [dispatch, success, error]);
   const removeFromCartHandler = (id) => {
-    dispatch(removeFromCart(id));
+    // dispatch(removeFromCart(id));
   };
 
   const checkoutHandler = () => {
     // navigate("/login?redirect=shipping");
     navigate("/shipping");
   };
-
+  const handleIncrease = (e, item) => {
+    dispatch(addToCart(item.book._id, 1));
+  };
+  const handleDecrease = (e, item) => {
+    dispatch(addToCart(item.book._id, -1));
+  };
   return (
     <div className="cart row">
       <div className="col-md-8 ">
         <h2>Shopping Cart</h2>
-        {cartItems.length === 0 ? (
+        { !cartItems || cartItems?.length === 0 ? (
           <Message>Your cart is empty</Message>
         ) : (
           <div className="list-group bg-color cart-item">
-            {cartItems.map((item) => (
-              <div className="list-group-item bg-color" key={item.book}>
+            {cartItems?.map((item) => (
+              <div className="list-group-item bg-color" key={item.book._id}>
                 <div className="row">
                   <div className="col-md-2">
                     <img
                       className="img-fluid rounded"
-                      src={item.image}
-                      alt={item.name}
+                      src={item.book.image}
+                      alt={item.book.name}
                     />
                   </div>
                   <div className="col-md-3">
-                    <Link to={`/book/${item.book}`}>{item.name}</Link>
+                    <Link to={`/book/${item.book}`}>{item.book.name}</Link>
                   </div>
-                  <div className="col-md-2">${item.price}</div>
+                  <div className="col-md-2">${item.book.price}</div>
                   <div className="col-md-3">
-                    <select
-                      className="form-control"
-                      value={item.qty}
-                      onChange={(e) =>
-                        dispatch(addToCart(item.book, Number(e.target.value)))
-                      }
+                    <button
+                      className="py-1 px-3 me-2 rounded border-0 bg-light"
+                      onClick={(e) => handleIncrease(e, item)}
+                      disabled={item.qty >= item.book.countInStock}
                     >
-                      {[...Array(item.countInStock).keys()].map((x) => (
-                        <option key={x + 1} value={x + 1}>
-                          {x + 1}
-                        </option>
-                      ))}
-                    </select>
+                      +
+                    </button>
+                    <input
+                      type="text"
+                      readOnly
+                      style={{ width: "50px" }}
+                      className="form-control d-inline-block "
+                      value={item.qty}
+                    />
+                    <button
+                      className="ms-1 py-1 px-3 rounded border-0 bg-light"
+                      onClick={(e) => handleDecrease(e, item)}
+                      disabled={item.qty <= 1}
+                    >
+                      -
+                    </button>
                   </div>
                   <div className="col-md-2">
                     <button
@@ -95,7 +116,7 @@ const Cart = () => {
               </h2>
               $
               {cartItems
-                .reduce((acc, item) => acc + item.qty * item.price, 0)
+                .reduce((acc, item) => acc + item.qty * item.book.price, 0)
                 .toFixed(2)}
             </div>
             <div className="list-group-item bg-color">

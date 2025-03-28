@@ -9,6 +9,8 @@ let router = express.Router();
 let $ = require('jquery');
 const request = require('request');
 const moment = require('moment');
+const { Order } = require("../models/orderModel");
+const bookModel = require("../models/bookModel");
 
 router.get('/', function(req, res, next){
 
@@ -144,7 +146,7 @@ router.post('/create_payment_url', function (req, res, next) {
     res.redirect(vnpUrl)
 });
 
-router.get('/vnpay_return', function (req, res, next) {
+router.get('/vnpay_return', async function (req, res, next) {
     let vnp_Params = req.query;
 
     let secureHash = vnp_Params['vnp_SecureHash'];
@@ -166,10 +168,19 @@ router.get('/vnpay_return', function (req, res, next) {
 
     if(secureHash === signed){
         //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-
-        res.render('success', {code: vnp_Params['vnp_ResponseCode']})
+        const orderId = vnp_Params['vnp_TxnRef'];
+        const newOrder = await Order.findOneAndUpdate({ _id: orderId }, { status: "PAID", isPaid: true, paidAt: Date.now() });
+        const bookList = newOrder.orderItems.map(item => { return { book: item.book, qty: item.qty } });
+        const bookUpdateList = await bookModel.find({ _id: { $in: bookList.map(item => item.book) } });
+        const bulk = bookModel.collection.initializeUnorderedBulkOp();
+        bookUpdateList.forEach(book => {
+            bulk.find({ _id: book._id }).update({ $inc: { countInStock: -book.qty } });
+        });
+        await bulk.execute();
+        res.redirect('http://localhost:3000/order-success?vnp_ResponseCode=' + vnp_Params['vnp_ResponseCode'])
     } else{
-        res.render('success', {code: '97'})
+        await Order.findOneAndUpdate({ _id: orderId }, { status: "PAID_ERROR", isPaid: false, paidAt: Date.now() });
+        res.redirect('http://localhost:3000/order-success?vnp_ResponseCode=97')
     }
 });
 

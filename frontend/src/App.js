@@ -20,7 +20,10 @@ import BookCreate from "./pages/BookCreate/BookCreate";
 import OrderList from "./pages/OrderList/OrderList";
 import CategoryBooksPage from "./pages/CategoryBooksPage/CategoryBooksPage";
 import Contact from "./components/Contact/Contact";
-
+import OrderSuccess from "./pages/OrderSuccess/OrderSuccess";
+import Sale from "./pages/Sales/Sale";
+import ProtectRoute from "./components/ProtectRoute/ProtectRoute";
+import { ToastContainer, Bounce } from "react-toastify";
 const App = () => {
   return (
     <div className="app">
@@ -28,28 +31,76 @@ const App = () => {
         <Header />
         <main>
           <Routes>
-            <Route path="/order/:id" element={<Order />} />
-            <Route path="/shipping" element={<Shipping />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/placeorder" element={<PlaceOrder />} />
+            <Route
+              path="/order/:id"
+              element={<ProtectRoute children={<Order />} />}
+            />
+            <Route
+              path="/shipping"
+              element={<ProtectRoute children={<Shipping />} />}
+            />
+            <Route
+              path="/payment"
+              element={<ProtectRoute children={<Payment />} />}
+            />
+            <Route
+              path="/placeorder"
+              element={<ProtectRoute children={<PlaceOrder />} />}
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/profile"
+              element={<ProtectRoute children={<Profile />} />}
+            />
             <Route path="/book/:id" element={<BookDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/cart/:id" element={<Cart />} />
-            <Route path="/admin/userlist" element={<UserList />} />
-            <Route path="/admin/user/:id/edit" element={<UserEdit />} />
-            <Route path="/admin/booklist" element={<BookList />} />
-            <Route path="/admin/book/create" element={<BookCreate />} />
-            <Route path="/books/categories/:categoryId" element={<CategoryBooksPage />} />
-            <Route path="/admin/orderlist" element={<OrderList />} />
+            <Route
+              path="/order-success"
+              element={<ProtectRoute children={<OrderSuccess />} />}
+            />
+            <Route
+              path="/cart"
+              element={<ProtectRoute children={<Cart />} />}
+            />
+            <Route
+              path="/admin/userlist"
+              element={<ProtectRoute isAdmin={true} children={<UserList />} />}
+            />
+            <Route
+              path="/admin/user/:id/edit"
+              element={<ProtectRoute isAdmin={true} children={<UserEdit />} />}
+            />
+            <Route
+              path="/admin/booklist"
+              element={<ProtectRoute isAdmin={true} children={<BookList />} />}
+            />
+            <Route
+              path="/admin/book/create"
+              element={
+                <ProtectRoute isAdmin={true} children={<BookCreate />} />
+              }
+            />
+            <Route
+              path="/books/categories/:categoryId"
+              element={<ProtectRoute children={<CategoryBooksPage />} />}
+            />
+            <Route
+              path="/admin/orderlist"
+              element={<ProtectRoute isAdmin={true} children={<OrderList />} />}
+            />
             <Route
               path="/admin/booklist/:pageNumber"
-              element={<BookList />}
+              element={<ProtectRoute isAdmin={true} children={<BookList />} />}
               exact
             />
-            <Route path="/admin/book/:id/edit" element={<BookEdit />} />
+            <Route
+              path="/admin/sale"
+              element={<ProtectRoute isAdmin={true} children={<Sale />} />}
+            />
+            <Route
+              path="/admin/book/:id/edit"
+              element={<ProtectRoute isAdmin={true} children={<BookEdit />} />}
+            />
             <Route path="/search/:keyword" element={<Home />} exact />
             <Route path="/page/:pageNumber" element={<Home />} exact />
             <Route
@@ -63,6 +114,19 @@ const App = () => {
         </main>
         <Footer />
       </Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
     </div>
   );
 };

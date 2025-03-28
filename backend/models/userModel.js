@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const ObjectId = mongoose.Schema.ObjectId;
 
 const userSchema = mongoose.Schema(
   {
@@ -11,6 +12,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+    },
+    cart: {
+      type: ObjectId,
+      ref: "Cart",
     },
     password: {
       type: String,

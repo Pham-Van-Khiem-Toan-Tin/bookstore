@@ -5,7 +5,7 @@ import Book from "../../components/Book/Book";
 import Message from "../../components/Message/Message";
 import Loader from "../../components/Loader/Loader";
 import Paginate from "../../components/Paginate/Paginate";
-import { listBooks } from "../../actions/bookActions";
+import { listBooks, listRecommendedBooks } from "../../actions/bookActions";
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -15,6 +15,7 @@ const HomePage = () => {
   const dispatch = useDispatch();
 
   const bookList = useSelector((state) => state.bookList);
+  const {books: bookRecommendList} = useSelector((state) => state.bookRecommend);
   const { loading, error, books, page, pages } = bookList;
 
   const [showIntro, setShowIntro] = useState(true); // State kiểm tra khi tìm kiếm
@@ -26,7 +27,7 @@ const HomePage = () => {
     } else {
       setShowIntro(true);
     }
-
+    dispatch(listRecommendedBooks());
     dispatch(listBooks(keyword, pageNumber));
   }, [dispatch, keyword, pageNumber]);
 
@@ -50,7 +51,26 @@ const HomePage = () => {
           </div>
         </div>
       )}
-
+       {/* Phần danh sách sách */}
+       <div className="book-section">
+        <div className="title">
+          <h2>Recommended books</h2>
+          <p>Sách nhiều lượt quan tâm trong tuần.</p>
+        </div>
+        {loading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant="alert-danger">{error}</Message>
+        ) : (
+          <>
+            <div className="books">
+              {bookRecommendList.map((book) => (
+                <Book key={book._id} book={book} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
       {/* Phần danh sách sách */}
       <div className="book-section">
         <div className="title">

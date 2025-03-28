@@ -20,7 +20,35 @@ import {
   ORDER_DELIVER_SUCCESS,
   ORDER_DELIVER_FAIL,
   ORDER_DELIVER_RESET,
+  SALE_FAIL,
+  SALE_REQUEST,
+  SALE_SUCCESS,
 } from "../constants/orderConstants";
+
+
+export const saleReducer = (state = { loading: true, sale: {} }, action) => {
+  switch (action.type) {
+    case SALE_REQUEST:
+      return {
+        ...state,
+        loading: true,
+      };
+    case SALE_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        sale: action.payload,
+      };
+    case SALE_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    default:
+      return state;
+  }
+};
 
 export const orderCreateReducer = (state = {}, action) => {
   switch (action.type) {

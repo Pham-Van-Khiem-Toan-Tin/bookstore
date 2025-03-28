@@ -10,10 +10,11 @@ const {
   getTopBooks,
 } = require("../controllers/bookController");
 const { protect, admin } = require("../middlewares/authMiddleware");
-const { getBooksByCategory } = require('../controllers/bookController');
+const { getBooksByCategory, getRecommendedBooks } = require('../controllers/bookController');
 
 // Routes for books
 router.get("/", getBooks);
+router.get("/top", getRecommendedBooks);
 router.post("/", protect, admin, createBook);
 router.post("/:id/reviews", protect, createBookReview);
 router.get("/top", getTopBooks);

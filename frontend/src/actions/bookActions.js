@@ -21,8 +21,28 @@ import {
   BOOK_TOP_REQUEST,
   BOOK_TOP_SUCCESS,
   BOOK_TOP_FAIL,
+  BOOK_RECOMMEND_REQUEST,
+  BOOK_RECOMMEND_SUCCESS,
+  BOOK_RECOMMEND_FAIL,
 } from "../constants/bookConstants";
 
+export const listRecommendedBooks = () => async (dispatch) => {
+  try {
+    dispatch({ type: BOOK_RECOMMEND_REQUEST });
+
+    const { data } = await axios.get(`/api/books/top`);
+
+    dispatch({ type: BOOK_RECOMMEND_SUCCESS, payload: data });
+  } catch (error) {
+    dispatch({
+      type: BOOK_RECOMMEND_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+}
 // Action tìm kiếm sách
 export const listBooks = (keyword = "", pageNumber = "") => async (dispatch) => {
   try {
@@ -66,7 +86,7 @@ export const listBooksByCategory = (categoryId, keyword = "", pageNumber = "") =
 };
 
 // Action xem chi tiết sách
-export const listBookDetails = (id) => async (dispatch) => {
+export const getBookDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: BOOK_DETAILS_REQUEST });
 

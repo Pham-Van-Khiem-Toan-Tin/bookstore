@@ -6,6 +6,7 @@ import Loader from "../../components/Loader/Loader";
 import FormContainer from "../../components/FormContainer/FormContainer";
 import { login } from "../../actions/userActions";
 import "./Login.css";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,13 @@ const Login = () => {
       navigate("/");
     }
   }, [navigate, userInfo]);
-
+  useEffect(() => {
+    if(error) {
+      toast.error("Tài khoản hoặc mật khẩu không đúng.");
+      dispatch({ type: "USER_LOGIN_RESET" })
+    }
+  }, [error])
+  
   const submitHandler = (e) => {
     e.preventDefault();
     dispatch(login(email, password));

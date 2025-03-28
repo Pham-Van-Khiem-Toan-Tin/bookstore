@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import Rating from "../../components/Book/Rating";
 import Loader from "../../components/Loader/Loader";
 import Message from "../../components/Message/Message";
-import { listBookDetails, createBookReview } from "../../actions/bookActions";
+import { getBookDetails, createBookReview } from "../../actions/bookActions";
 import { BOOK_CREATE_REVIEW_RESET } from "../../constants/bookConstants";
 import "./BookDetail.css";
+import { addToCart } from "../../actions/cartActions";
+import { toast } from "react-toastify";
 
 const BookDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-
   const [qty, setQty] = useState(1);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -22,12 +22,13 @@ const BookDetail = () => {
   const { loading, error, book } = bookDetails;
 
   const userLogin = useSelector((state) => state.userLogin);
+  const cart = useSelector((state) => state.cart);
+  const { success: successCart, error: errorCart } = cart;
   const { userInfo } = userLogin;
 
   const bookCreateReview = useSelector((state) => state.bookCreateReview);
   const { success: successBookReview, error: errorBookReview } =
     bookCreateReview;
-
   useEffect(() => {
     if (successBookReview) {
       alert("Review Submitted!");
@@ -35,13 +36,37 @@ const BookDetail = () => {
       setComment("");
       dispatch({ type: BOOK_CREATE_REVIEW_RESET });
     }
-    dispatch(listBookDetails(id));
+    dispatch(getBookDetails(id));
   }, [dispatch, id, successBookReview]);
-
-  const addToCartHandler = () => {
-    navigate(`/cart/${id}?qty=${qty}`);
+  useEffect(() => {
+    if (successCart) {
+      toast.success("Add to cart successfully!");
+      dispatch({ type: "CART_RESET" });
+    }
+    if (errorCart) {
+      alert(errorCart);
+      dispatch({ type: "CART_RESET_ERROR" });
+    }
+  }, [dispatch, successCart, errorCart]);
+  const addToCartHandler = (e) => {
+    e.preventDefault();
+    dispatch(addToCart(book._id, qty));
   };
-
+  // Hàm này chỉ cho nhập số
+  const handleQuantityKeyDown = (e) => {
+    const allowedKeys = [
+      "Backspace",
+      "Delete",
+      "ArrowLeft",
+      "ArrowRight",
+      "Tab",
+    ];
+    const isNumber = /[0-9]/.test(e.key);
+    // Chỉ cho phép số (0-9) hoặc các phím điều hướng/xóa
+    if (!isNumber && !allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  };
   const submitHandler = (e) => {
     e.preventDefault();
     dispatch(
@@ -51,7 +76,17 @@ const BookDetail = () => {
       })
     );
   };
-
+  const handleChange = (e) => {
+    let newValue = e.target.value;
+    // Loại bỏ số 0 ở đầu nếu có
+    if (newValue.startsWith("0")) {
+      newValue = newValue.replace(/^0+/, "");
+    }
+    if (newValue > book.countInStock) {
+      newValue = book.countInStock;
+    }
+    setQty(newValue);
+  };
   return (
     <div className="container book-detail">
       <Link className="btn back-btn" to="/">
@@ -87,22 +122,24 @@ const BookDetail = () => {
                   {book.countInStock > 0 ? "In Stock" : "Out of Stock"}
                 </div>
                 <div className="list-group-item bg-color">
-                  <strong>Category:</strong> {book.category ? book.category.name : "N/A"}
+                  <strong>Category:</strong>{" "}
+                  {book.category ? book.category.name : "N/A"}
                 </div>
                 <div className="list-group-item bg-color">
-                  <strong>Qty: </strong>
-
-                  <select
-                    className="form-control"
-                    value={qty}
-                    onChange={(e) => setQty(e.target.value)}
-                  >
-                    {[...Array(book.countInStock).keys()].map((x) => (
-                      <option key={x + 1} value={x + 1}>
-                        {x + 1}
-                      </option>
-                    ))}
-                  </select>
+                  {book != null && book.countInStock > 0 ? (
+                    <>
+                      <strong>Qty: </strong>
+                      <input
+                        type="text"
+                        className="form-control d-inline-block w-auto"
+                        value={qty}
+                        onKeyDown={handleQuantityKeyDown}
+                        onChange={handleChange}
+                      />
+                    </>
+                  ) : (
+                    <strong className="text-danger">Out of stock</strong>
+                  )}
                 </div>
 
                 <div className="list-group-item bg-color">
@@ -110,6 +147,7 @@ const BookDetail = () => {
                 </div>
               </div>
               <button
+                type="button"
                 className="btn btn-add-to-cart"
                 onClick={addToCartHandler}
                 disabled={book.countInStock === 0}

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import axios from "axios";
-import { PayPalButton } from "react-paypal-button-v2";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message/Message";
@@ -198,10 +197,7 @@ const Order = () => {
                   <div className="list-group-item bg-color">
                     {loadingPay && <Loader />}
 
-                    <PayPalButton
-                      amount={order.totalPrice}
-                      onSuccess={successPaymentHandler}
-                    />
+                    <span className="btn order-btn">PAID</span>
                   </div>
                 )}
                 {loadingDeliver && <Loader />}

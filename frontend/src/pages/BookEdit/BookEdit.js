@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message/Message";
 import Loader from "../../components/Loader/Loader";
 import FormContainer from "../../components/FormContainer/FormContainer";
-import { listBookDetails, updateBook } from "../../actions/bookActions";
+import { getBookDetails, updateBook } from "../../actions/bookActions";
 import { BOOK_UPDATE_RESET } from "../../constants/bookConstants";
 import "./BookEdit.css";
 
@@ -57,7 +57,7 @@ const BookEdit = () => {
       navigate("/admin/booklist");
     } else {
       if (!book.name || book._id !== id) {
-        dispatch(listBookDetails(id));
+        dispatch(getBookDetails(id));
       } else {
         setName(book.name);
         setPrice(book.price);

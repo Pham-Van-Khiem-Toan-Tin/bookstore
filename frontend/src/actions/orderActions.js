@@ -18,7 +18,48 @@ import {
   ORDER_DELIVER_REQUEST,
   ORDER_DELIVER_SUCCESS,
   ORDER_DELIVER_FAIL,
+  SALE_REQUEST,
+  SALE_SUCCESS,
+  SALE_FAIL,
 } from "../constants/orderConstants";
+
+
+export const statistical = () => async (dispatch) => {
+  try {
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    const token = localStorage.getItem("tk");
+    if (!isAuthenticated) {
+      alert("Please login to view cart");
+      return;
+    }
+    const config = {
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+    dispatch({
+      type: SALE_REQUEST,
+    });
+    console.log("call api");
+    
+    const { data } = await axios.get(`/api/sale`, config);
+
+    dispatch({
+      type: SALE_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: SALE_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+}
 
 export const createOrder = (order) => async (dispatch, getState) => {
   try {
