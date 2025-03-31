@@ -23,22 +23,22 @@ const getRecommendedBooks = asyncHandler(async (req, res) => {
     },
     {
       $unwind: {
-        path: "$orderItems"
-      }
+        path: "$orderItems",
+      },
     },
     {
       $lookup: {
         from: "books",
         localField: "orderItems.book",
         foreignField: "_id",
-        as: "bookDetails"
-      }
+        as: "bookDetails",
+      },
     },
     //bookDetails: [{id: 1, title: "ad"}] => bookDetails: {id: 1, title: "ad"}
     {
       $unwind: {
-        path: "$bookDetails"
-      }
+        path: "$bookDetails",
+      },
     },
     {
       $group: {
@@ -49,17 +49,17 @@ const getRecommendedBooks = asyncHandler(async (req, res) => {
         image: { $first: "$bookDetails.image" },
         rating: { $first: "$bookDetails.rating" },
         numReviews: {
-          $first: "$bookDetails.numReviews"
-        }
-      }
+          $first: "$bookDetails.numReviews",
+        },
+      },
     },
     {
       $sort: {
-        totalSold: 1
-      }
+        totalSold: 1,
+      },
     },
     {
-      $limit: 10
+      $limit: 10,
     },
     {
       $project: {
@@ -68,12 +68,16 @@ const getRecommendedBooks = asyncHandler(async (req, res) => {
         price: 1,
         image: 1,
         rating: 1,
-        numReviews: 1
-      }
-    }
+        numReviews: 1,
+      },
+    },
   ]);
   if (!listBooks || listBooks.length < 10) {
-    listBooks = await bookModel.find({}).select("_id name price image rating numReviews").sort({createdAt: 1}).limit(10);
+    listBooks = await bookModel
+      .find({})
+      .select("_id name price image rating numReviews")
+      .sort({ createdAt: 1 })
+      .limit(10);
   }
   res.json(listBooks);
 });
@@ -95,7 +99,6 @@ const getBooks = asyncHandler(async (req, res) => {
     .populate("category", "name description") // Populate category details
     .limit(pageSize)
     .skip(pageSize * (page - 1));
-  console.log(books);
 
   res.json({ books, page, pages: Math.ceil(count / pageSize) });
 });
@@ -107,7 +110,8 @@ const getBookById = asyncHandler(async (req, res) => {
   const book = await bookModel
     .findById(req.params.id)
     .populate("category", "name description");
-
+  console.log(book);
+  
   if (book) {
     res.json(book);
   } else {
@@ -124,7 +128,7 @@ const deleteBook = asyncHandler(async (req, res) => {
   if (book) {
     // Kiểm tra nếu người dùng là Admin
     if (req.user && req.user.isAdmin) {
-      await Book.findByIdAndDelete(req.params.id);
+      await bookModel.findByIdAndDelete(req.params.id);
       res.json({ message: "Book removed" });
     } else {
       res.status(401);
@@ -197,8 +201,9 @@ const updateBook = asyncHandler(async (req, res) => {
     countInStock,
     category,
   } = req.body;
-
-  const book = await Book.findById(req.params.id);
+  console.log(req.body);
+  
+  const book = await bookModel.findById(req.params.id);
 
   if (book) {
     book.name = name || book.name;
@@ -207,7 +212,7 @@ const updateBook = asyncHandler(async (req, res) => {
     book.image = image || book.image;
     book.author = author || book.author;
     book.genre = genre || book.genre;
-    book.countInStock = countInStock || book.countInStock;
+    book.countInStock = countInStock ? Number.parseInt(countInStock) : book.countInStock;
     book.category = category || book.category; // Cập nhật category nếu có thay đổi
 
     const updatedBook = await book.save();
@@ -224,7 +229,7 @@ const updateBook = asyncHandler(async (req, res) => {
 const createBookReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
 
-  const book = await Book.findById(req.params.id);
+  const book = await bookModel.findById(req.params.id);
 
   if (book) {
     const alreadyReviewed = book.reviews.find(
@@ -265,14 +270,14 @@ const createBookReview = asyncHandler(async (req, res) => {
 // @route   GET /api/books/top
 // @access  Public
 const getTopBooks = asyncHandler(async (req, res) => {
-  const books = await Book.find({}).sort({ rating: -1 }).limit(4);
+  const books = await bookModel.find({}).sort({ rating: -1 }).limit(4);
 
   res.json(books);
 });
 
 const getBooksByCategory = async (categoryId) => {
   try {
-    const books = await Book.find({ category: categoryId }); // Tìm các sách có category trùng với categoryId
+    const books = await bookModel.find({ category: categoryId }); // Tìm các sách có category trùng với categoryId
     return books;
   } catch (error) {
     console.error("Error fetching books by category:", error);
@@ -289,5 +294,5 @@ module.exports = {
   createBookReview,
   getTopBooks,
   getBooksByCategory,
-  getRecommendedBooks
+  getRecommendedBooks,
 };

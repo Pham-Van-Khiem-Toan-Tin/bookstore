@@ -176,7 +176,7 @@ router.get('/vnpay_return', async function (req, res, next) {
         const bookList = newOrder.orderItems.map(item => { return { book: item.book, qty: item.qty } });
         const bulk = bookModel.collection.initializeUnorderedBulkOp();
         bookList.forEach(book => {
-            bulk.find({ _id: book.book }).update({ $inc: { countInStock: -book.qty } });
+            bulk.find({ _id: book.book }).update({ $inc: { countInStock: -book.qty, sold: book.qty } });
         });
         await bulk.execute();
         res.redirect('http://localhost:3000/order-success?vnp_ResponseCode=' + vnp_Params['vnp_ResponseCode'])

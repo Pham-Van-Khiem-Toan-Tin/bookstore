@@ -66,7 +66,7 @@ const BookEdit = () => {
         setGenre(book.genre);
         setCountInStock(book.countInStock);
         setDescription(book.description);
-        setCategory(book.category); // Lấy category từ sách
+        setCategory(book.category._id); // Lấy category từ sách
       }
     }
   }, [dispatch, id, book, navigate, successUpdate]);
