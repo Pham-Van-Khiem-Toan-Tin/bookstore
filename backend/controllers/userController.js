@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../utils/generateToken");
-const { User } = require("../models/userModel");
+const userModel = require("../models/userModel");
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -8,7 +8,7 @@ const { User } = require("../models/userModel");
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await userModel.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
     res.json({
@@ -30,14 +30,14 @@ const authUser = asyncHandler(async (req, res) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  const userExists = await User.findOne({ email });
+  const userExists = await userModel.findOne({ email });
 
   if (userExists) {
     res.status(404);
     throw new Error("User already exists");
   }
 
-  const user = await User.create({
+  const user = await userModel.create({
     name,
     email,
     password,
@@ -60,7 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const user = await userModel.findById(req.user._id);
 
   if (user) {
     res.json({
@@ -79,7 +79,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const user = await userModel.findById(req.user._id);
 
   if (user) {
     user.name = req.body.name || user.name;
@@ -108,7 +108,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   GET /api/users
 // @access  Private/admin
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({});
+  const users = await userModel.find({});
   res.json(users);
 });
 
@@ -116,7 +116,7 @@ const getUsers = asyncHandler(async (req, res) => {
 // @route   GET /api/users/:id
 // @access  Private/admin
 const deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndDelete(req.params.id);
+  const user = await userModel.findByIdAndDelete(req.params.id);
   if (user) {
     res.json({ message: "User removed" });
   } else {
@@ -129,7 +129,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/:id
 // @access  Private/Admin
 const getUserById = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select("-password");
+  const user = await userModel.findById(req.params.id).select("-password");
 
   if (user) {
     res.json(user);
@@ -143,7 +143,7 @@ const getUserById = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 const updateUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await userModel.findById(req.params.id);
 
   if (user) {
     user.name = req.body.name || user.name;

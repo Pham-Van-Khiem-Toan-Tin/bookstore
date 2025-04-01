@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 const { users } = require("./data/users");
 const { books } = require("./data/books");
-const { User } = require("./models/userModel");
+const userModel = require("./models/userModel");
 const { Book } = require("./models/bookModel");
 const { Order } = require("./models/orderModel");
 const { connectDB } = require("./config/db");
@@ -14,9 +14,9 @@ const importData = async () => {
   try {
     await Order.deleteMany();
     await Book.deleteMany();
-    await User.deleteMany();
+    await userModel.deleteMany();
 
-    const createdUsers = await User.insertMany(users);
+    const createdUsers = await userModel.insertMany(users);
 
     const adminUser = createdUsers[0]._id;
 
@@ -38,7 +38,7 @@ const destroyData = async () => {
   try {
     await Order.deleteMany();
     await Book.deleteMany();
-    await User.deleteMany();
+    await userModel.deleteMany();
 
     console.log("Data Destroyed!");
     process.exit();

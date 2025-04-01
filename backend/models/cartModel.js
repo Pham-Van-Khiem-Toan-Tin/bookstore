@@ -6,14 +6,14 @@ const cartSchema = new mongoose.Schema(
     user: {
       type: ObjectId,
       required: true,
-      ref: "User",
+      ref: "user",
     },
     cartItems: [
       {
         book: {
           type: ObjectId,
           required: true,
-          ref: "Books",
+          ref: "book",
         },
         qty: {
           type: Number,
@@ -26,5 +26,5 @@ const cartSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-const Cart = mongoose.model("Cart", cartSchema);
+const Cart = mongoose.model("cart", cartSchema);
 module.exports = Cart;

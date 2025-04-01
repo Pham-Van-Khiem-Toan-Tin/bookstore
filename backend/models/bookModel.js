@@ -8,7 +8,7 @@ const reviewSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: "user",
     },
   },
   {
@@ -21,7 +21,7 @@ const bookSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.ObjectId,
       required: true,
-      ref: "User",
+      ref: "user",
     },
     name: {
       type: String,
@@ -47,13 +47,12 @@ const bookSchema = new mongoose.Schema(
     category: {
       type: mongoose.Schema.ObjectId,  // Liên kết tới Category
       required: true,
-      ref: "Category",  // Tham chiếu đến Category Model
+      ref: "category",  // Tham chiếu đến Category Model
     },
     description: {
       type: String,
       required: true,
     },
-    reviews: [reviewSchema],
     rating: {
       type: Number,
       required: true,
@@ -80,6 +79,6 @@ const bookSchema = new mongoose.Schema(
   }
 );
 
-const bookModel = mongoose.model("Books", bookSchema);
+const bookModel = mongoose.model("book", bookSchema);
 
 module.exports =  bookModel;
