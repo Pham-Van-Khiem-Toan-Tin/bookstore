@@ -17,7 +17,7 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const cartRouters = require("./routes/cartRouters");
 const saleRouters = require("./routes/saleRouters");
-
+const reviewRouters = require("./routes/reviewRouters");
 const app = express();
 
 app.set('views', path.join(__dirname, 'views'));
@@ -55,6 +55,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/cart", cartRouters);
 app.use("/api/sale", saleRouters);
+app.use("/api/review", reviewRouters);
 
 app.get("/api/config/paypal", (req, res) =>
   res.send(process.env.PAYPAL_CLIENT_ID)

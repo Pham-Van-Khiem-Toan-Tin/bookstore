@@ -30,7 +30,7 @@ import {
   orderListReducer,
   saleReducer
 } from "./reducers/orderReducers";
-
+import { createReviewReducer, reviewListReducer } from "./reducers/reviewReducers";
 const reducer = combineReducers({
   bookList: bookListReducer,
   bookDetails: bookDetailsReducer,
@@ -54,7 +54,9 @@ const reducer = combineReducers({
   userDelete: userDeleteReducer,
   userUpdate: userUpdateReducer,
   bookRecommend: bookRecommendReducer,
-  sale: saleReducer
+  sale: saleReducer,
+  reviewCreate: createReviewReducer,
+  reviewList: reviewListReducer,
 });
 
 const cartItemsFromStorage = localStorage.getItem("cartItems")

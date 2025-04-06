@@ -9,18 +9,22 @@ import { BOOK_CREATE_REVIEW_RESET } from "../../constants/bookConstants";
 import "./BookDetail.css";
 import { addToCart } from "../../actions/cartActions";
 import { toast } from "react-toastify";
+import { listReviews, watchMoreReview } from "../../actions/reviewActions";
 
 const BookDetail = () => {
   const { id } = useParams();
   const [qty, setQty] = useState(1);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const [page, setPage] = useState(1);
 
   const dispatch = useDispatch();
 
   const bookDetails = useSelector((state) => state.bookDetails);
   const { loading, error, book } = bookDetails;
-
+  const {
+    loading: loadingReview,
+    error: errorReview,
+    reviews,
+  } = useSelector((state) => state.reviewList);
   const userLogin = useSelector((state) => state.userLogin);
   const cart = useSelector((state) => state.cart);
   const { success: successCart, error: errorCart } = cart;
@@ -30,14 +34,9 @@ const BookDetail = () => {
   const { success: successBookReview, error: errorBookReview } =
     bookCreateReview;
   useEffect(() => {
-    if (successBookReview) {
-      alert("Review Submitted!");
-      setRating(0);
-      setComment("");
-      dispatch({ type: BOOK_CREATE_REVIEW_RESET });
-    }
     dispatch(getBookDetails(id));
-  }, [dispatch, id, successBookReview]);
+    dispatch(listReviews(id));
+  }, [dispatch, id]);
   useEffect(() => {
     if (successCart) {
       toast.success("Add to cart successfully!");
@@ -67,15 +66,7 @@ const BookDetail = () => {
       e.preventDefault();
     }
   };
-  const submitHandler = (e) => {
-    e.preventDefault();
-    dispatch(
-      createBookReview(id, {
-        rating,
-        comment,
-      })
-    );
-  };
+
   const handleChange = (e) => {
     let newValue = e.target.value;
     // Loại bỏ số 0 ở đầu nếu có
@@ -86,6 +77,11 @@ const BookDetail = () => {
       newValue = book.countInStock;
     }
     setQty(newValue);
+  };
+  const watchMore = () => {
+    const userIds = reviews.map((item) => item.userId);
+    dispatch(watchMoreReview(id, userIds, page + 1));
+    setPage(page + 1);
   };
   return (
     <div className="container book-detail">
@@ -159,69 +155,28 @@ const BookDetail = () => {
           <div className="row">
             <div className="col-md-6">
               <h2>Reviews</h2>
-              {book.reviews.length === 0 && <Message>No reviews</Message>}
-              <div className="list-group">
-                {book.reviews.map((review) => (
-                  <div
-                    className="list-group-item bg-color border-secondary rounded-0"
-                    key={review.name}
-                  >
-                    <strong>{review.name}</strong>
-                    <Rating value={review.rating} />
-                    <p>{review.createdAt.substring(0, 10)}</p>
-                    <p>{review.comment}</p>
+              {reviews && reviews.length > 0 ? (
+                <>
+                  <div className="list-group">
+                    {reviews.map((review) => (
+                      <div
+                        className="list-group-item bg-color border-secondary rounded-0"
+                        key={review.name}
+                      >
+                        <strong>{review.name}</strong>
+                        <Rating value={review.rating} />
+                        <p>{review.createdAt.substring(0, 10)}</p>
+                        <p>{review.comment}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                <div className="list-group-item bg-color mt-3 border-top border-secondary rounded-0">
-                  <h2>Write a Review</h2>
-                  {errorBookReview && (
-                    <Message variant="alert-danger">{errorBookReview}</Message>
-                  )}
-                  {userInfo ? (
-                    <form onSubmit={submitHandler}>
-                      <div className="mb-3">
-                        <label htmlFor="rating" className="form-label">
-                          Rating
-                        </label>
-                        <select
-                          id="rating"
-                          className="form-select form-control"
-                          value={rating}
-                          onChange={(e) => setRating(e.target.value)}
-                        >
-                          <option value="">Select...</option>
-                          <option value="1">1 - Poor</option>
-                          <option value="2">2 - Fair</option>
-                          <option value="3">3 - Good</option>
-                          <option value="4">4 - Very Good</option>
-                          <option value="5">5 - Excellent</option>
-                        </select>
-                      </div>
-                      <div className="mb-3">
-                        <div className="form-label"></div>
-                        <textarea
-                          className="form-control"
-                          rows="3"
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                        ></textarea>
-                      </div>
-
-                      <button type="submit" className="btn btn-review-submit">
-                        Submit
-                      </button>
-                    </form>
-                  ) : (
-                    <Message>
-                      Please{" "}
-                      <Link style={{ background: "none" }} to="/login">
-                        sign in
-                      </Link>{" "}
-                      to write a review
-                    </Message>
-                  )}
-                </div>
-              </div>
+                  <div className="w-100 my-2 d-flex align-items-center justify-content-center">
+                    <button onClick={watchMore} className="btn btn-primary">Watch more</button>
+                  </div>
+                </>
+              ) : (
+                <Message>No reviews</Message>
+              )}
             </div>
           </div>
         </>
