@@ -24,6 +24,7 @@ import OrderSuccess from "./pages/OrderSuccess/OrderSuccess";
 import Sale from "./pages/Sales/Sale";
 import ProtectRoute from "./components/ProtectRoute/ProtectRoute";
 import { ToastContainer, Bounce } from "react-toastify";
+import Help from "./pages/Help/Help";
 const App = () => {
   return (
     <div className="app">
@@ -127,6 +128,7 @@ const App = () => {
         theme="light"
         transition={Bounce}
       />
+      <Help />
     </div>
   );
 };

@@ -35,6 +35,7 @@ export const reviewListReducer = (state = { reviews: [] }, action) => {
        }
       return {
         ...state,
+        loading: false,
         reviews: oldReview,
       };
     case REVIEW_WATCH_MORE_FAIL:

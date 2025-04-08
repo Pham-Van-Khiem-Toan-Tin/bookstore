@@ -41,9 +41,11 @@ const Navbar = () => {
 
         {/* Mục Contact di chuyển lên trước giỏ hàng và chỉ hiển thị cho người dùng không phải admin */}
         {userInfo && !userInfo.isAdmin && (
-          <li className="mt-2 contact-link">
-            <Link to="/contact">Contact</Link>
-          </li>
+          <>
+            <li className="mt-2 contact-link">
+              <Link to="/contact">Contact</Link>
+            </li>
+          </>
         )}
 
         {userInfo && !userInfo.isAdmin && (
@@ -124,10 +126,7 @@ const Navbar = () => {
             </button>
             <ul className="dropdown-menu bg-nav-color">
               <li className="bg-nav-color">
-                <Link
-                  to="/admin/sale"
-                  className="dropdown-item bg-nav-color"
-                >
+                <Link to="/admin/sale" className="dropdown-item bg-nav-color">
                   Statistical
                 </Link>
                 <Link
