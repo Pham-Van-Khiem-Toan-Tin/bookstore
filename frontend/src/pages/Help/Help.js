@@ -85,7 +85,7 @@ const Help = () => {
             {messages.map((msg, index) => (
               <div key={index} className={`message ${msg.sender}`}>
                 <strong>{msg.sender === "user" ? "Bạn: " : "Bot: "}</strong>
-                {msg.text}
+                <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
               </div>
             ))}
             <div ref={messagesEndRef} />

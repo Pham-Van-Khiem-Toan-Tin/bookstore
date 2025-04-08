@@ -111,7 +111,9 @@ io.on("connection", (socket) => {
           Người dùng hỏi: "${question}"
           Dựa trên danh sách sách sau để trả lời:
           ${booksData}
-          Trả lời tự nhiên và chính xác và trình bày thành danh sách và ngắn gọn dựa trên dữ liệu này.
+          Bạn là một trợ lý tư vấn sách cho website bán sách.
+          Nếu không hiểu hãy hỏi: Bạn có thể hỏi lại được không?
+          Trả lời tự nhiên và chính xác và ngắn gọn dựa trên dữ liệu này.
       `;
 
     // Gọi Gemini
