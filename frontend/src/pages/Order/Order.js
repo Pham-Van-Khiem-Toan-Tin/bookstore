@@ -90,7 +90,8 @@ const Order = () => {
     const modalElement = document.getElementById("reviewModal");
     const modal = Modal.getInstance(modalElement);
     modal.show();
-
+    console.log(item.book);
+    
     setProductRating({
       orderId: order._id,
       productId: item.book,

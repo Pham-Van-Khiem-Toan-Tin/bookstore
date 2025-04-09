@@ -16,7 +16,7 @@ export const watchMoreReview = (bookId, userIds, pageNumber = "") => async (disp
   try {
     dispatch({ type: REVIEW_WATCH_MORE_REQUEST });
     const { data } = await axios.post(
-      `/api/review/${bookId}?page=${pageNumber}`,
+      `/api/review/more-review/${bookId}?page=${pageNumber}`,
       {
         userIds: userIds
       }
